@@ -21,9 +21,6 @@ def do_connect():
             pass
     print('Network configuration:', s_if.ifconfig())
 
-# Put pin #2 low (this is for light alarm, which uses pwm on pin2 to light up)
-p = Pin(2, Pin.OUT)
-p.value(0)
 
 do_connect()
 
