@@ -4,10 +4,11 @@
 import uasyncio as asyncio
 import machine
 import utime
-from umqtt.robust import MQTTClient
+import asyn
+from umqtt.simple import MQTTClient
 
 ### Settings
-MQTT_SERVER = '192.168.1.5'     # MQTT Broker to subscribe with
+MQTT_SERVER = '1.1.1.1'     # MQTT Broker to subscribe with
 CONTROL_TOPIC = 'home/garage/door/control'  # mqtt topic to subscribe to for cmds
 STATUS_TOPIC = 'home/garage/door/status'    # mqtt topic to publish to for status
 DOOR_TOGGLE_PIN = 15            # Pick a pin with internal pull-down
@@ -22,7 +23,9 @@ SPEED_OF_SOUND = 340            # Speed of sound (m/s)
 # Generate unique name based on uid and start mqtt client
 umqtt_uid = "umqtt_client_" + ''.join('%02X' % b for b in machine.unique_id())
 umqtt_client = MQTTClient(umqtt_uid, MQTT_SERVER)
-
+# Lock for accessing mqtt client
+umqtt_lock = asyn.Lock()
+mqtt_connected = False
 
 # On my garage door opener, door is toggled by shorting the two bell wires
 # that come from it. They are fed to a relay, which is controlled by
@@ -48,13 +51,15 @@ async def close_door():
 # check door state (open or closed) by using HC-SR04
 # to measure distance from sensor to door. Parameters
 # can be adjusted by editing variables at top of this file.
-async def check_door_state():
+async def check_door_state(lock):
     global umqtt_client
+    global mqtt_connected
+
     echo = machine.Pin(ECHO_PIN, machine.Pin.IN)
     trig = machine.Pin(TRIG_PIN, machine.Pin.OUT)
     distance = 0.0
     state = 'closed'
-    await asyncio.sleep(2)
+    await asyncio.sleep(5)
 
     while True:
         state = b'closed'
@@ -81,7 +86,11 @@ async def check_door_state():
             if (100 * distance) <= DOOR_OPEN_DISTANCE:
                 state = b'open'
             # publish state
-            umqtt_client.publish(STATUS_TOPIC, state)
+            async with lock:
+                try:
+                    umqtt_client.publish(STATUS_TOPIC, state)
+                except:
+                    loop.create_task(reconnect(lock))
         await asyncio.sleep(CHECK_DOOR_INTERVAL * 60)
 
 
@@ -106,7 +115,7 @@ def sub_cb(topic, msg):
         print("Unknown topic")
 
 # main: start mqtt subscribe, and periodically check for new messages
-async def main():
+async def check_subs():
     global umqtt_client
 
     umqtt_client.DEBUG = True
@@ -124,6 +133,6 @@ async def main():
 
 
 loop = asyncio.get_event_loop()
-loop.create_task(main())
-loop.create_task(check_door_state())
+loop.create_task(check_subs(mqtt_lock))
+loop.create_task(check_door_state(mqtt_lock))
 loop.run_forever()
