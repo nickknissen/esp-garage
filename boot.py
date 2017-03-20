@@ -4,8 +4,8 @@
 from machine import Pin
 
 # Config (change these!!!)
-SSID = ''
-PASSWORD = ''
+SSID = ""
+PASSWORD = ""
 
 def do_connect():
     import network
@@ -20,12 +20,6 @@ def do_connect():
         while not s_if.isconnected():
             pass
     print('Network configuration:', s_if.ifconfig())
-
-a = Pin(12, Pin.OUT)
-a.value(0)
-a = Pin(16, Pin.OUT)
-a.value(0)
-a = None
 
 do_connect()
 
