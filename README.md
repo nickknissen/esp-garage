@@ -4,7 +4,7 @@ Garage door controller using an ESP8266 and MQTT
 
 
 ### Summary:
-The ESP266 operates as a MQTT client, listening for a 'open' or 'close' message and is continuously broadcasting the garage door status ('open' or 'closed').
+The ESP266 operates as a MQTT client, listening for a 'open' or 'close' message and is continuously broadcasting the garage door status ('open' or 'closed'). Pictures of it in action: http://imgur.com/a/nxKxK
 
 ### Description:
 This is a MQTT client for controlling garage door via a 5V relay. Exact hardware required will depend on the garage door openner installed. For mine, shorting two wires briefly causes the door to toggle. It uses the [micropython for the ESP8266](https://github.com/micropython/micropython/tree/master/esp8266), and three libraries:
