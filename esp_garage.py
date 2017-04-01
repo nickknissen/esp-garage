@@ -95,10 +95,11 @@ async def check_door_state(lock):
                 door_opened = False
             # publish state
             async with lock:
-                try:
-                    umqtt_client.publish(STATUS_TOPIC, door_state)
-                except:
-                    loop.create_task(reconnect(lock))
+                if mqtt_connected:
+                    try:
+                        umqtt_client.publish(STATUS_TOPIC, door_state)
+                    except:
+                        loop.create_task(reconnect(lock))
         else:
             print("Unable to get distance.")
         await asyncio.sleep(CHECK_DOOR_INTERVAL * 60)
@@ -139,33 +140,32 @@ async def reconnect(lock):
         while not mqtt_connected:
             try:
                 umqtt_client.connect(clean_session=True)
+                umqtt_client.subscribe(CONTROL_TOPIC)
                 mqtt_connected = True
+                print("Connected to MQTT broker: %s" % MQTT_SERVER)
             except:
                 # Unable to connect, retry
-                print("Unable to connect to mqtt server %s, trying again in %i seconds" % (MQTT_SERVER, retry_delay))
+                print("Unable to connect to MQTT broker %s, trying again in %i seconds" % (MQTT_SERVER, retry_delay))
                 await asyncio.sleep(retry_delay)
-        print("Connected to MQTT broker: %s" % MQTT_SERVER)
-        umqtt_client.subscribe(CONTROL_TOPIC)
 
 
-# main: start mqtt subscribe, and periodically check for new messages
+# check_subs: monitor for new messages on mqtt subscription
 async def check_subs(lock):
     global umqtt_client
     global mqtt_connected
 
     while True:
-        if mqtt_connected:
-            async with lock:
+        async with lock:
+            if mqtt_connected:
                 try:
                     umqtt_client.check_msg()
                 except:
                     loop.create_task(reconnect(lock))
         await asyncio.sleep(1)
-    async with lock:
-        umqtt_client.disconnect()
 
 
 loop = asyncio.get_event_loop()
+loop.create_task(reconnect(umqtt_lock))
 loop.create_task(check_subs(umqtt_lock))
 loop.create_task(check_door_state(umqtt_lock))
 loop.run_forever()
