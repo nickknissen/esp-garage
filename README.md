@@ -4,10 +4,10 @@ Garage door controller using an ESP8266 and MQTT
 
 
 ### Summary:
-The ESP266 operates as a MQTT client, listening for a 'open' or 'close' message and is continuously broadcasting the garage door status ('open' or 'closed'). Pictures of it in action: http://imgur.com/a/nxKxK
+The ESP266 operates as a MQTT client listening for an 'open' or 'close' message, and continuously broadcasting the garage door status ('open' or 'closed'). Pictures of it in action: http://imgur.com/a/nxKxK
 
 ### Description:
-This is a MQTT client for controlling garage door via a 5V relay. Exact hardware required will depend on the garage door openner installed. For mine, shorting two wires briefly causes the door to toggle. It uses the [micropython for the ESP8266](https://github.com/micropython/micropython/tree/master/esp8266), and three libraries:
+This is a MQTT client for controlling a garage door opener via a 5V relay. Exact hardware required will depend on the garage door openner installed. For mine, shorting two wires from the garage door opener briefly causes the door to toggle. This project uses [micropython for the ESP8266](https://github.com/micropython/micropython/tree/master/esp8266), with three additional libraries:
 
 * uasyncio and umqtt from [micropython-lib](https://github.com/micropython/micropython-lib)
 
@@ -15,14 +15,15 @@ This is a MQTT client for controlling garage door via a 5V relay. Exact hardware
 
 In this configuration, the ESP8266 is intended to listen for messages over 1 MQTT topic: `home/garage/door/control`. This topic is customizable by setting the appropriate variable at the beginning of the `esp_garage.py` file.
 
-* Valid messages for this control topic are `open` and `close`. Anything else will be ignored.
+Valid messages for this control topic are `open` and `close`. Anything else will be ignored.
 
 Example:
 
     $ mosquitto_pub -h 10.1.1.1 -t home/garage/door/control -m 'open'
+    
+** Caution ** Be mindful of the retain flag when publishing commands to the esp.. if the retain flag is set and the esp is offline for whatever reason, this will cause the door to toggle when the esp comes back online.. which might be when you least expect it! I recommend publishing messages with the retain flag set to false.
 
-
-* `home/garage/door/status` is the topic where the device will send either `open` or `closed`, indicating whether or not the garage door is opened. This status is determined by using the HC-SR04 ultrasonic distance sensor. The interval for reporting status over MQTT is configurable via a variable at the top of the `esp_garage.py` file.
+`home/garage/door/status` is the topic where the device will send either `open` or `closed`, indicating whether or not the garage door is opened. This status is determined by using the HC-SR04 ultrasonic distance sensor. The interval for reporting status over MQTT is configurable via a variable at the top of the `esp_garage.py` file.
 
 Example:
 
@@ -65,6 +66,8 @@ Power on device and send it a command! Here's an example with [Mosquitto](http:/
 1x 14k resistor
 
 1x 10k resistor
+
+1x 100 or 200uF decoupling capacitor (which was needed to stabilize 5V VCC to the Wemos D1)
 
 1x HC-SR04 ultrasonic sensor
 
