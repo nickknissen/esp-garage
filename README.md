@@ -39,10 +39,13 @@ Example:
 - Download micropython-lib, micropython-async, and micropython from their respective project pages.
 
 - [Include uasyncio, umqtt, and asyn modules as frozen modules in micropython](https://learn.adafruit.com/micropython-basics-loading-modules/frozen-modules)
-
+  - Note: Building uasyncio as frozen bytecode is no longer necessary in Micropython 1.9, since it is included by default!
+  
 - Also include [micropython-async](https://github.com/peterhinch/micropython-async) (asyn.py) as a frozen module. Note: if you run out of space, consider removing the web_repl applications, or prune something else that is not a requirement here.
 
-- Edit `boot.py` and `esp_garage.py` in this project to include your WiFi settings and MQTT broker IP, along with any other settings you would like to modify.
+- Edit `app.py` in this project to include your MQTT broker IP, along with any other settings you would like to modify.
+
+- Install `main.py` and `boot.py` from the [esp-bootstrap](https://github.com/craftyguy/esp-bootstrap) project. Also pay attention to instructions for creating the `secrets.py` file, which also needs to be installed on the device.
 
 - Build micropython. I suggest including the files in this project under `esp8266/scripts` in your micropython directory so you don't have to manually copy these files to the device
 
