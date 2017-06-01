@@ -36,9 +36,9 @@ loop = asyncio.get_event_loop()
 # the DOOR_TOGGLE_PIN
 async def toggle_door():
     p = machine.Pin(DOOR_TOGGLE_PIN, machine.Pin.OUT)
-    p.value(0)
-    await asyncio.sleep_ms(100)
     p.value(1)
+    await asyncio.sleep_ms(100)
+    p.value(0)
 
 
 # open_door and close_door just call toggle_door for now, since my
