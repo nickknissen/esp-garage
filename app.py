@@ -27,15 +27,18 @@ umqtt_client = MQTTClient(umqtt_uid, MQTT_SERVER)
 # Lock for accessing mqtt client
 umqtt_lock = asyn.Lock()
 mqtt_connected = False
+# Coroutine loop
+loop = asyncio.get_event_loop()
+
 
 # On my garage door opener, door is toggled by shorting the two bell wires
 # that come from it. They are fed to a relay, which is controlled by
 # the DOOR_TOGGLE_PIN
 async def toggle_door():
     p = machine.Pin(DOOR_TOGGLE_PIN, machine.Pin.OUT)
-    p.high()
+    p.value(0)
     await asyncio.sleep_ms(100)
-    p.low()
+    p.value(1)
 
 
 # open_door and close_door just call toggle_door for now, since my
@@ -66,12 +69,12 @@ async def check_door_state(lock):
     while True:
         # HC-SR04 is triggered by a 10us pulse on 'trig' pin
         # Set trigger pin to low to make sure there's a good rise when set high
-        trig.low()
+        trig.value(0)
         utime.sleep_us(100)
         # Toggle trigger pin for 10us
-        trig.high()
+        trig.value(1)
         utime.sleep_us(10)
-        trig.low()
+        trig.value(0)
         # echo pin will be high for a duration (is us) indicating distance.
         try:
             pulse_width = machine.time_pulse_us(echo, 1)
@@ -164,8 +167,8 @@ async def check_subs(lock):
         await asyncio.sleep(1)
 
 
-loop = asyncio.get_event_loop()
-loop.create_task(reconnect(umqtt_lock))
-loop.create_task(check_subs(umqtt_lock))
-loop.create_task(check_door_state(umqtt_lock))
-loop.run_forever()
+def main():
+    loop.create_task(reconnect(umqtt_lock))
+    loop.create_task(check_subs(umqtt_lock))
+    loop.create_task(check_door_state(umqtt_lock))
+    loop.run_forever()
