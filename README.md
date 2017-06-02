@@ -20,7 +20,7 @@ Valid messages for this control topic are `open` and `close`. Anything else will
 Example:
 
     $ mosquitto_pub -h 10.1.1.1 -t home/garage/door/control -m 'open'
-    
+
 ** Caution ** Be mindful of the retain flag when publishing commands to the esp.. if the retain flag is set and the esp is offline for whatever reason, this will cause the door to toggle when the esp comes back online.. which might be when you least expect it! I recommend publishing messages with the retain flag set to false.
 
 `home/garage/door/status` is the topic where the device will send either `open` or `closed`, indicating whether or not the garage door is opened. This status is determined by using the HC-SR04 ultrasonic distance sensor. The interval for reporting status over MQTT is configurable via a variable at the top of the `esp_garage.py` file.
@@ -59,14 +59,15 @@ Power on device and send it a command! Here's an example with [Mosquitto](http:/
     mosquitto_pub -h 10.1.1.1 -t home/garage/door/control -m 'open'
 
 
-
 ### Hardware BOM:
+
+![Schematic](schematic.png)
 
 1x Wemos D1 Mini ESP8266
 
 2x 100k resistors
 
-1x 14k resistor
+1x 22k resistor
 
 1x 10k resistor
 
