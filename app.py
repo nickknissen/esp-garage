@@ -23,7 +23,7 @@ SPEED_OF_SOUND = 29.1           # Speed of sound (cm/us)
 
 ### Globals
 # Generate unique name based on uid and start mqtt client
-umqtt_uid = PROJECT + ''.join('%02X' % b for b in machine.unique_id())
+umqtt_uid = PROJECT + "_" + ''.join('%02X' % b for b in machine.unique_id())
 umqtt_client = MQTTClient(umqtt_uid, MQTT_SERVER)
 # Lock for accessing mqtt client
 umqtt_lock = asyn.Lock()
