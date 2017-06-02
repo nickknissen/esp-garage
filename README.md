@@ -78,4 +78,4 @@ Power on device and send it a command! Here's an example with [Mosquitto](http:/
 
 Power was provided by a sacrificial USB cable and a 5V usb wall wart.
 
-Hand-drawn schematic is included in the project (schematic.png). Why hand-drawn? Because it's fun!
+A schematic is included in the project (schematic.png).
